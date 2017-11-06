@@ -1,2 +1,2 @@
 # team19
-Deep Learning応用講座のTeam 19のリポジトリ
+Deep Learning応用講座 Team19のリポジトリ
