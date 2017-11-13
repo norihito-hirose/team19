@@ -13,8 +13,7 @@ def get_files(data_dir):
 def find_tf(file_path):
     f = open(file_path, "r")
     code = f.read()
-    elements = re.findall("tf\..*?\(", code)
-    elements = [element.replace("(", "") for element in elements]
+    elements = re.findall("tf\.[\w|\.]*", code)
 
     return elements
 
