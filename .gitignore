@@ -150,3 +150,6 @@ tags
 pyvenv.cfg
 .venv
 pip-selfcheck.json
+
+# mac
+.DS_Store
