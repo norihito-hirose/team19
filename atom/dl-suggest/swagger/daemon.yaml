@@ -1,0 +1,146 @@
+swagger: "2.0"
+info:
+  description: |
+    入力されたコードに対して次に予測されるコードの候補を返却。
+    
+    <b>daemonの起動</b>
+    <pre>
+    $ bin/dlsuggestd -p [PORT_NUM] \
+                     -m [MODEL_FILE] \
+                     -w [WORD_TO_IDX_FILE] \
+                     -t [TARGET_TO_IDX_FILE]
+    </pre>
+    
+    PORT_NUM: tcpのポート番号。デフォルト: 9999
+    MODEL_FILE: 学習済みのモデルファイル
+    WORD_TO_IDX_FILE: word_to_idx.npy
+    TARGET_TO_IDX_FILE: target_to_idx.npy
+    
+    <b>daemonの終了</b>
+    <pre>
+    $ bin/dlsuggestd close
+    </pre>
+    
+    <b>daemonのステータス</b>
+    <pre>
+    $ bin/dlsuggestd status
+    </pre>
+    
+    stdoutで以下を返却
+    
+    起動中: running
+    停止中: stop
+    
+  version: "1.0.0"
+  title: "DL Suggest"
+  termsOfService: "https://github.com/norihito-hirose/team19"
+  contact:
+    email: "dl@suggen.st"
+  license:
+    name: "Unknown"
+host: "localhost:9999"
+basePath: "/v1"
+tags:
+- name: "predict"
+  description: "入力されたコードから予測される候補を返却"
+schemes:
+- "http"
+paths:
+  /predict:
+    get:
+      tags:
+      - "predict"
+      summary: "入力されたコードを予測"
+      description: "入力されたコードを予測。予測される候補を返却"
+      operationId: "predict"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "in"
+        in: "query"
+        description: "予測したい前の行のコード"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Success"
+        400:
+          description: "Invalid status value"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Error"
+definitions:
+  Success:
+    type: "object"
+    required:
+    - "info"
+    - "candidates"
+    properties:
+      info:
+        $ref: "#/definitions/Info"
+      candidates:
+        type: "array"
+        items:
+          $ref: "#/definitions/Candidate"
+  Candidate:
+    type: "object"
+    required:
+    - "code"
+    - "probability"
+    properties:
+      code:
+        type: "string"
+        example: "tf.ones(shape, dtype=None, order=c)"
+      probability:
+        type: "number"
+        example: 0.456
+  Info:
+    type: "object"
+    required: 
+    - "request_url"
+    - "model_file"
+    - "word_to_idx_file"
+    - "target_to_idx_file"
+    properties:
+      request_url:
+        type: "string"
+        example: "http://localhost:9999/v1/predict?in=_SESSION%20%3D%20tf.InteractiveSession()"
+      model_file:
+        type: "string"
+        example: "model_lstm.pth"
+      word_to_idx_file:
+        type: "string"
+        example: "word_to_idx.npy"
+      target_to_idx_file:
+        type: "string"
+        example: "target_to_idx.npy"
+  Error:
+    type: "object"
+    required:
+    - "info"
+    - "errors"
+    properties:
+      info:
+        $ref: "#/definitions/Info"
+      errors:
+        type: "array"
+        items:
+          $ref: "#/definitions/Errors"
+  Errors:
+    type: "object"
+    required:
+    - "type"
+    - "description"
+    properties:
+      type:
+        type: "string"
+        example: "ParseError"
+      description:
+        type: "string"
+        example: "parse error input string."
+      
