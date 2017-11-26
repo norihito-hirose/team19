@@ -21,11 +21,11 @@ RNN/LSTM によるコード予測を行うための python モジュール
 
 ヘルプ
 
-`python main train.py -h`
+`python train.py -h`
 
 例: デバッグ用に、初めの200データのみ、1 epochのみで学習
 
-`python main train.py --epochs 1 --datanum 200`
+`python train.py --epochs 1 --datanum 200`
 
 ## 予測
 
@@ -33,6 +33,6 @@ RNN/LSTM によるコード予測を行うための python モジュール
 
 `python main predict.py -h`
 
-例: ソースファイルを読んで、次のコードを予測、上位10件をプリント
+例: ソースファイルを指定して、次のコードを予測、上位10件をプリント。学習済みの model.pth, *_to_idx.npy のパスを指定。
 
-`python main predict.py predict_sample/xor_tensorflow.py --topN 10`
+`python predict.py predict_sample/xor_tensorflow.py --model ../model/model_lstm.pth --word_to_idx ../model/word_to_idx.npy --target_to_idx ../model/target_to_idx.npy --topN 10`
