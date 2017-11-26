@@ -31,7 +31,7 @@ RNN/LSTM によるコード予測を行うための python モジュール
 
 ヘルプ
 
-`python main predict.py -h`
+`python predict.py -h`
 
 例: ソースファイルを指定して、次のコードを予測、上位10件をプリント。学習済みの model.pth, *_to_idx.npy のパスを指定。
 
