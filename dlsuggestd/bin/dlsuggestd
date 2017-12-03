@@ -1,0 +1,69 @@
+#! /usr/bin/env python3
+#/* vim: set ff=python: */
+""" This script control dlsuggest daemon """
+
+import os
+import argparse
+
+from dl_suggest_model import DLSuggestModel
+from dl_suggest_server import DLSuggestServer
+
+# pylint: disable=invalid-name
+pidfile = '/tmp/dlsuggestd.pid'
+stdout = os.path.abspath('log/stdout.log')
+stderr = os.path.abspath('log/stderr.log')
+
+daemon = DLSuggestServer(pidfile, stdout=stdout, stderr=stderr)
+
+def start(args):
+    """ start daemon """
+    # create and load predict model
+    model = DLSuggestModel(args.model, args.word_idx, args.target_idx)
+    print("loaded trained model")
+
+    daemon.set_port(args.port)
+    daemon.set_model(model)
+    daemon.start()
+
+    pid = daemon.get_pid()
+
+    if not pid:
+        print("Unable run daemon")
+    else:
+        print("Daemon is running [PID=%d]" % pid)
+
+def close(_args):
+    """ close daemon """
+    print("Stopping daemon")
+    daemon.stop()
+
+def status(_args):
+    """ print daemon status """
+    pid = daemon.get_pid()
+
+    if not pid:
+        print("stop")
+    else:
+        print("running")
+
+parser = argparse.ArgumentParser(prog='dlsuggestd')
+
+subparser = parser.add_subparsers(help='sub command help')
+subparser.required = True
+subparser.dest = "command"
+
+start_parser = subparser.add_parser('start')
+start_parser.add_argument('-p', '--port', type=int, help="listen port. default: 9999", default=9999)
+start_parser.add_argument('-m', '--model', type=str, help="trained model.", required=True)
+start_parser.add_argument('-w', '--word_idx', type=str, help="word to index.", required=True)
+start_parser.add_argument('-t', '--target_idx', type=str, help="target to index.", required=True)
+start_parser.set_defaults(func=start)
+
+close_parser = subparser.add_parser('close', aliases=['stop'])
+close_parser.set_defaults(func=close)
+
+status_parser = subparser.add_parser('status')
+status_parser.set_defaults(func=status)
+
+args = parser.parse_args()
+args.func(args)
