@@ -27,13 +27,13 @@ usage: dlsuggestd start [-h] [-p PORT] -m MODEL -w WORD_IDX -t TARGET_IDX
 
 optional arguments:
   -h, --help            show this help message and exit
-  -p PORT, --port PORT  tcpのポート番号
+  -p PORT, --port PORT  listen port. default: 9999
   -m MODEL, --model MODEL
-                        学習済みのモデルファイルのパス
+                        trained model.
   -w WORD_IDX, --word_idx WORD_IDX
-                        word_to_idx.npy
+                        word to index.
   -t TARGET_IDX, --target_idx TARGET_IDX
-                        target_to_idx.npy
+                        target to index.
 
 $ bin/dlsuggestd start -m ../model/model_lstm.pth -w ../model/word_to_idx.npy -t ../model/target_to_idx.npy
 ```
