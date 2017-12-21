@@ -19,13 +19,13 @@ class ConvLayer(nn.Module):
 
     def forward(self, x):
         out = self.conv(x)[:, :, :-1] # batch_size x output_size*3 x len(seq)
-        z, f, o, i = out.chunk(4, dim=1) # batch x output_size x len(input)-1
-        z = self.tanh(z)
-        f = self.sigmoid(f)
-        o = self.sigmoid(o)
-        i = self.sigmoid(i)
+        Z, F, O, I = out.chunk(4, dim=1) # batch x output_size x len(input)-1
+        Z = self.tanh(Z)
+        F = self.sigmoid(F)
+        O = self.sigmoid(O)
+        I = self.sigmoid(I)
 
-        return z, f, o, i
+        return Z, F, O, I
 
 class LSTMLayer(nn.Module):
     def __init__(self, input_size, output_size):
@@ -34,11 +34,21 @@ class LSTMLayer(nn.Module):
         self.conv = ConvLayer(input_size, output_size)
 
     def forward(self, x):
-        z, f, o, i = self.conv(x)
+        Z, F, O, I = self.conv(x)
+        H = None
         c = 0
         time_length = x.size(2)
-        for i in range(time_length):
+        for t in range(time_length):
+            z = Z[:, :, t]
+            f = F[:, :, t]
+            o = O[:, :, t]
+            i = I[:, :, t]
             c = f * c + i * z
             h = o * c
 
-        return h
+            if H is None:
+                H = h.unsqueeze(2)
+            else:
+                H = torch.cat((H, h.unsqueeze(2)), dim=2)
+
+        return H
