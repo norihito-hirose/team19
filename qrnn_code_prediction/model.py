@@ -14,7 +14,6 @@ class Net(nn.Module):
             LSTMLayer(256, 256)
         )
         self.fc = nn.Linear(256, vocab_size)
-        self.log_softmax = nn.LogSoftmax()
 
     def forward(self, x):
         out = self.embedding(x)
@@ -22,6 +21,5 @@ class Net(nn.Module):
         out = self.lstm(out)
         out = out.transpose(1, 2)
         out = self.fc(out)
-        out = self.log_softmax(out)
 
         return out
