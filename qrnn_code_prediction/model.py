@@ -71,7 +71,7 @@ class QRNN(object):
                 for i in range(logits.size(0)):
                     logit = logits[i][:lengths[i]-1]
                     target = x[i][1:lengths[i]]
-                    loss.append(criterio1n(logit, target))
+                    loss.append(criterion(logit, target))
                 loss = sum(loss) / len(loss)
 
                 loss.backward()
