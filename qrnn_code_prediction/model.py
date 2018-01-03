@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
+import torch.backends.cudnn as cudnn
 
 import pickle
 
@@ -11,6 +12,8 @@ from config import cfg
 
 from tensorboard import summary
 from tensorboard import FileWriter
+
+import time
 
 class QRNN(object):
     def __init__(self, data):
@@ -40,6 +43,8 @@ class QRNN(object):
 
     def load_network(self):
         net = Net(self.vocab_size)
+        if self.cuda:
+            net.cuda()
         if not cfg.TRAIN.FLAG:
             state_dict = torch.load(cfg.NET, map_location=lambda storage, loc: storage)
             print("Load from", cfg.NET)
@@ -50,14 +55,15 @@ class QRNN(object):
         start_idx = 0
 
         net = self.net
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.NLLLoss()
         lr = cfg.TRAIN.LEARNING_RATE
-        optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0, 0.99))
+        optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0.9, 0.999))
 
-        count = 0
+        count = 1
         start_idx = 0
         iteration = len(self.seqs) // self.batch_size + 1
         for epoch in range(self.epoch):
+            start = time.time()
             for i in range(iteration):
                 x, lengths = prepare_batch(self.seqs, start_idx, self.batch_size)
                 if self.cuda:
@@ -68,18 +74,27 @@ class QRNN(object):
                 logits = net(x)
                 loss = []
 
-                for i in range(logits.size(0)):
-                    logit = logits[i][:lengths[i]-1]
-                    target = x[i][1:lengths[i]]
+                for j in range(logits.size(0)):
+                    logit = logits[j][:lengths[j]-1]
+                    target = x[j][1:lengths[j]]
                     loss.append(criterion(logit, target))
-                loss = sum(loss) / len(loss)
 
+                loss = sum(loss) / len(loss)
                 loss.backward()
                 optimizer.step()
 
-                summary_net = summary.scalar("Loss", loss.data[0])
-                self.summary_writer.add_summary(summary_net, count)
-                count += 1
+                print(loss.data[0])
+
+            end = time.time()
+
+            summary_net = summary.scalar("Loss", loss.data[0])
+            self.summary_writer.add_summary(summary_net, count)
+            count += 1
+
+            if count % cfg.TRAIN.LR_DECAY_INTERVAL == 0:
+                lr = lr * 0.95
+                optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0.9, 0.999))
+                print("decayed learning rate")
         save_model(net, self.model_dir)
         f = open("output/Data/data.pkl", "wb")
         pickle.dump(self.data, f)
