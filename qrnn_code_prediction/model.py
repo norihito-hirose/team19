@@ -1,25 +1,89 @@
 import torch
 import torch.nn as nn
-from layer import ConvLayer, LSTMLayer
+from torch.autograd import Variable
+import torch.optim as optim
 
-class Net(nn.Module):
-    def __init__(self, vocab_size, embedding_size=200):
-        super(Net, self).__init__()
+import pickle
 
-        self.embedding = nn.Embedding(vocab_size, embedding_size)
+from network import *
+from utils import *
+from config import cfg
 
-        self.lstm = nn.Sequential(
-            LSTMLayer(embedding_size, 256),
-            LSTMLayer(256, 256),
-            LSTMLayer(256, 256)
-        )
-        self.fc = nn.Linear(256, vocab_size)
+from tensorboard import summary
+from tensorboard import FileWriter
 
-    def forward(self, x):
-        out = self.embedding(x)
-        out = out.transpose(1, 2)
-        out = self.lstm(out)
-        out = out.transpose(1, 2)
-        out = self.fc(out)
+class QRNN(object):
+    def __init__(self, data):
+        if cfg.TRAIN.FLAG:
+            self.model_dir = cfg.NET
+            self.log_dir = cfg.TRAIN.LOG_DIR
+            self.summary_writer = FileWriter(self.log_dir)
 
-        return out
+        self.cuda = torch.cuda.is_available()
+
+        if self.cuda:
+            self.gpu = int(cfg.GPU_ID)
+            torch.cuda.set_device(self.gpu)
+            cudnn.benchmark = True
+
+        self.epoch = cfg.TRAIN.NUM_EPOCH
+        self.batch_size = cfg.TRAIN.BATCH_SIZE
+
+        self.vocab_size = data.vocab_size
+        self.embedding_size = cfg.EMBEDDING_SIZE
+        self.index2word = data.index2word
+        self.seqs = data.indexed_seqs
+
+        self.net = self.load_network()
+
+        self.data = data
+
+    def load_network(self):
+        net = Net(self.vocab_size)
+        if not cfg.TRAIN.FLAG:
+            state_dict = torch.load(cfg.NET, map_location=lambda storage, loc: storage)
+            print("Load from", cfg.NET)
+
+        return net
+
+    def train(self):
+        start_idx = 0
+
+        net = self.net
+        criterion = nn.CrossEntropyLoss()
+        lr = cfg.TRAIN.LEARNING_RATE
+        optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0, 0.99))
+
+        count = 0
+        start_idx = 0
+        iteration = len(self.seqs) // self.batch_size + 1
+        for epoch in range(self.epoch):
+            for i in range(iteration):
+                x, lengths = prepare_batch(self.seqs, start_idx, self.batch_size)
+                if self.cuda:
+                    x = Variable(torch.LongTensor(x)).cuda()
+                else:
+                    x = Variable(torch.LongTensor(x))
+
+                logits = net(x)
+                loss = []
+
+                for i in range(logits.size(0)):
+                    logit = logits[i][:lengths[i]-1]
+                    target = x[i][1:lengths[i]]
+                    loss.append(criterio1n(logit, target))
+                loss = sum(loss) / len(loss)
+
+                loss.backward()
+                optimizer.step()
+
+                summary_net = summary.scalar("Loss", loss.data[0])
+                self.summary_writer.add_summary(summary_net, count)
+                count += 1
+        save_model(net, self.model_dir)
+        f = open("output/Data/data.pkl", "wb")
+        pickle.dump(self.data, f)
+        f.close
+
+    def predict(seq):
+        pass
