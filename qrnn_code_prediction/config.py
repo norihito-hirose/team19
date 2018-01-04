@@ -11,6 +11,9 @@ __C.WORKERS = 6
 __C.NET = "output/Model"
 __C.EMBEDDING_SIZE = 200
 
+__C.DATA = edict()
+__C.DATA.MIN_FREQUENCY = 10
+
 __C.TRAIN = edict()
 __C.TRAIN.FLAG = True
 __C.TRAIN.BATCH_SIZE = 32
