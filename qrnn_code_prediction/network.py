@@ -61,15 +61,16 @@ class Net(nn.Module):
 
         self.lstm = nn.Sequential(
             LSTMLayer(embedding_size, 256),
-            LSTMLayer(256, vocab_size)
+            LSTMLayer(256, 256),
+            LSTMLayer(256, 256)
         )
-        self.logsoft = nn.LogSoftmax(dim=2)
+        self.fc = nn.Linear(256, vocab_size)
 
     def forward(self, x):
         out = self.embedding(x)
         out = out.transpose(1, 2)
         out = self.lstm(out)
         out = out.transpose(1, 2)
-        out = self.logsoft(out)
+        out = self.fc(out)
 
         return out
