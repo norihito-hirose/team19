@@ -20,7 +20,7 @@ class DataPreprocessor(object):
         seqs = []
         for f in files:
             seq = open(f).read().strip().split("\n")
-            if len(seq) < 512 and len(seq) > 2:
+            if cfg.DATA.MAX_LENGTH >= len(seq) and len(seq) >= cfg.DATA.MIN_LENGTH:
                 seqs.append(seq)
         seqs.sort(key=len)
 
@@ -44,7 +44,7 @@ class DataPreprocessor(object):
         indexed_seqs = []
         for seq in self.seqs:
             indexed_seq = [self.word2index[word] for word in seq if word in self.keep_words]
-            if len(indexed_seq) > 2:
+            if len(indexed_seq) >= cfg.DATA.MIN_LENGTH:
                 indexed_seqs.append(indexed_seq)
 
         indexed_seqs.sort(key=len)
