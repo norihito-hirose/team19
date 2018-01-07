@@ -73,13 +73,25 @@ class QRNN(object):
                     target = x[i][1:lengths[i]]
                     loss.append(criterion(logit, target))
                 loss = sum(loss) / len(loss)
-
+                net.zero_grad()
                 loss.backward()
                 optimizer.step()
 
-                summary_net = summary.scalar("Loss", loss.data[0])
-                self.summary_writer.add_summary(summary_net, count)
-                count += 1
+                print(loss.data[0])
+
+            end = time.time()
+
+            summary_net = summary.scalar("Loss", loss.data[0])
+            self.summary_writer.add_summary(summary_net, count)
+            count += 1
+            print("epoch done")
+
+            if count % cfg.TRAIN.LR_DECAY_INTERVAL == 0:
+                lr = lr * 0.95
+                optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0.9, 0.999))
+                print("decayed learning rate")
+
+
         save_model(net, self.model_dir)
         f = open("output/Data/data.pkl", "wb")
         pickle.dump(self.data, f)
