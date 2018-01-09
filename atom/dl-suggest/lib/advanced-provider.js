@@ -20,31 +20,48 @@ class AdvancedProvider {
 		const { editor, bufferPosition } = options;
 
 		// getting the prefix on our own instead of using the one Atom provides
-		let prefix = this.getPrefix(editor, bufferPosition);
+		let line = this.getCurrentLine(editor, bufferPosition);
+		let shouldPredict = this.shouldPredict(line);
 
-		// all of our snippets start with "tl"
-		if (prefix.startsWith('tf')) {
-			return this.findMatchingSuggestions(prefix);
+		// all of our snippets start with "tf"
+		if (shouldPredict) {
+			let sequence = this.getSequence(editor, bufferPosition);
+			return this.findMatchingSuggestions(line, sequence);
 		}
 	}
 
-	getPrefix(editor, bufferPosition) {
+	getCurrentLine(editor, bufferPosition) {
+		let line = editor.getTextInRange([[bufferPosition.row, 0], bufferPosition]);
+		let trimmedLine = line.trim();
+		return trimmedLine;
+	}
+
+	shouldPredict(line) {
 		// the prefix normally only includes characters back to the last word break
 		// which is problematic if your suggestions include punctuation (like "@")
 		// this expands the prefix back until a whitespace character is met
 		// you can tweak this logic/regex to suit your needs
-		let line = editor.getTextInRange([[bufferPosition.row, 0], bufferPosition]);
-		let match = line.match(/\S+$/);
-		return match ? match[0] : '';
+		if (line.startsWith('tf')) {
+			if (line.search(/\(/) == -1) {
+				return true;
+			}
+		}
+		return false;
 	}
 
-	findMatchingSuggestions(prefix) {
+	getSequence(editor, bufferPosition) {
+		let startRow = Math.max(0, bufferPosition.row - 10);
+		let sequence = editor.getTextInRange([[startRow, 0], bufferPosition]);
+		return sequence;
+	}
+
+	findMatchingSuggestions(prefix, sequence) {
 		// using a Promise lets you fetch and return suggestions asynchronously
 		// this is useful for hitting an external API without causing Atom to freeze
 		console.log(prefix);
 		return new Promise((resolve) => {
 			// fire off an async request to the external API
-			let queryURL = API_URL + '?in=' + prefix
+			let queryURL = API_URL + '?in=' + sequence;
 			fetch(queryURL)
 				.then((response) => {
 					// convert raw response data to json
