@@ -61,7 +61,7 @@ class AdvancedProvider {
 		console.log(prefix);
 		return new Promise((resolve) => {
 			// fire off an async request to the external API
-			let queryURL = API_URL + '?in=' + sequence;
+			let queryURL = API_URL + '?in=' + encodeURIComponent(sequence);
 			fetch(queryURL)
 				.then((response) => {
 					// convert raw response data to json
