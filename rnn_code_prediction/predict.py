@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import argparse
+import re
 
 from prepare_data import START_OF_SENTENCE, END_OF_SENTENCE, prepare_sequence
   
@@ -34,7 +35,17 @@ def predict_topN(target_word_list, score, N, with_probability = False, eliminate
     else:
         return [target_word_list[i] for i in candIdx]
 
+# used in dlsuggest daemon
 def predict_next_code(sentence, model, word_to_idx, target_word_list, topN = 5):
+    def find_tf(code):
+        elements = re.findall("tf\.[\w|\.]*", code)
+        return elements
+
+    sentence = find_tf(sentence[0])
+
+    return predict_next_code_from_list(sentence, model, word_to_idx, target_word_list, topN)
+
+def predict_next_code_from_list(sentence, model, word_to_idx, target_word_list, topN = 5):
     if sentence[0] != START_OF_SENTENCE:
         sentence = [START_OF_SENTENCE] + sentence 
     inputs = prepare_sequence(sentence, word_to_idx)
@@ -71,4 +82,4 @@ if __name__ == '__main__':
     print(sentence)
 
     model, word_to_idx, __, target_word_list = load_model(args.model, args.word_to_idx, args.target_to_idx)
-    print(predict_next_code(sentence, model, word_to_idx, target_word_list, args.topN))
+    print(predict_next_code_from_list(sentence, model, word_to_idx, target_word_list, args.topN))
