@@ -4,13 +4,14 @@ from torch.autograd import Variable
 import torch.optim as optim
 
 import pickle
+import time
 
 from network import *
 from utils import *
 from config import cfg
 
-from tensorboard import summary
-from tensorboard import FileWriter
+from tensorboardX import summary
+from tensorboardX import FileWriter
 
 class QRNN(object):
     def __init__(self, data):
@@ -24,7 +25,7 @@ class QRNN(object):
         if self.cuda:
             self.gpu = int(cfg.GPU_ID)
             torch.cuda.set_device(self.gpu)
-            cudnn.benchmark = True
+            # cudnn.benchmark = True
 
         self.epoch = cfg.TRAIN.NUM_EPOCH
         self.batch_size = cfg.TRAIN.BATCH_SIZE
@@ -62,10 +63,11 @@ class QRNN(object):
                 x, lengths = prepare_batch(self.seqs, start_idx, self.batch_size)
                 if self.cuda:
                     x = Variable(torch.LongTensor(x)).cuda()
+                    logits = net(x).cuda()
                 else:
                     x = Variable(torch.LongTensor(x))
+                    logits = net(x)
 
-                logits = net(x)
                 loss = []
 
                 for i in range(logits.size(0)):

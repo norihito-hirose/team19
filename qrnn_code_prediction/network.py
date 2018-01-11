@@ -57,14 +57,23 @@ class Net(nn.Module):
     def __init__(self, vocab_size, embedding_size=200):
         super(Net, self).__init__()
 
-        self.embedding = nn.Embedding(vocab_size, embedding_size)
+        if self.cuda:
+            self.embedding = nn.Embedding(vocab_size, embedding_size).cuda()
+            self.lstm = nn.Sequential(
+                LSTMLayer(embedding_size, 256),
+                LSTMLayer(256, 256),
+                LSTMLayer(256, 256)
+            ).cuda()
+            self.fc = nn.Linear(256, vocab_size).cuda()
+        else:
+            self.embedding = nn.Embedding(vocab_size, embedding_size)
+            self.lstm = nn.Sequential(
+                LSTMLayer(embedding_size, 256),
+                LSTMLayer(256, 256),
+                LSTMLayer(256, 256)
+            )
+            self.fc = nn.Linear(256, vocab_size)
 
-        self.lstm = nn.Sequential(
-            LSTMLayer(embedding_size, 256),
-            LSTMLayer(256, 256),
-            LSTMLayer(256, 256)
-        )
-        self.fc = nn.Linear(256, vocab_size)
 
     def forward(self, x):
         out = self.embedding(x)
