@@ -91,7 +91,7 @@ class QRNN(object):
             summary_net = summary.scalar("Loss", loss.data[0])
             self.summary_writer.add_summary(summary_net, count)
             count += 1
-            print("epoch done")
+            print("epoch done" + "%dsec"%(end-start))
 
             if count % cfg.TRAIN.LR_DECAY_INTERVAL == 0:
                 lr = lr * 0.95
