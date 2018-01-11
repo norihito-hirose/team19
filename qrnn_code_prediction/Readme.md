@@ -2,9 +2,9 @@ QRNN によるコード予測を行うための python モジュール
 
 # 環境
 
-* Python 3.5.2
-* Pytorch 0.3.0
-* tensorboard 1.0.0
+* Python 3.6.3
+* Pytorch 0.4.0a0+0a434ff
+* tensorboard 1.0.0a6
 * tensorboardX 0.8
 
 # ファイル構成

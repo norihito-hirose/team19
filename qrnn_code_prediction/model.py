@@ -3,7 +3,9 @@ import torch.nn as nn
 from torch.autograd import Variable
 import torch.optim as optim
 
+from tqdm import tqdm
 import pickle
+import time
 
 from network import *
 from utils import *
@@ -24,7 +26,7 @@ class QRNN(object):
         if self.cuda:
             self.gpu = int(cfg.GPU_ID)
             torch.cuda.set_device(self.gpu)
-            cudnn.benchmark = True
+            print("Use CUDA")
 
         self.epoch = cfg.TRAIN.NUM_EPOCH
         self.batch_size = cfg.TRAIN.BATCH_SIZE
@@ -40,6 +42,8 @@ class QRNN(object):
 
     def load_network(self):
         net = Net(self.vocab_size)
+        if self.cuda:
+            net = net.cuda()
         if not cfg.TRAIN.FLAG:
             state_dict = torch.load(cfg.NET, map_location=lambda storage, loc: storage)
             print("Load from", cfg.NET)
@@ -58,7 +62,7 @@ class QRNN(object):
         start_idx = 0
         iteration = len(self.seqs) // self.batch_size + 1
         for epoch in range(self.epoch):
-            for i in range(iteration):
+            for i in tqdm(range(iteration)):
                 x, lengths = prepare_batch(self.seqs, start_idx, self.batch_size)
                 if self.cuda:
                     x = Variable(torch.LongTensor(x)).cuda()
@@ -77,14 +81,12 @@ class QRNN(object):
                 loss.backward()
                 optimizer.step()
 
-                print(loss.data[0])
-
             end = time.time()
 
             summary_net = summary.scalar("Loss", loss.data[0])
             self.summary_writer.add_summary(summary_net, count)
             count += 1
-            print("epoch done")
+            print("epoch %d done. train loss: %f" % (epoch + 1, loss.data[0]))
 
             if count % cfg.TRAIN.LR_DECAY_INTERVAL == 0:
                 lr = lr * 0.95
@@ -97,5 +99,5 @@ class QRNN(object):
         pickle.dump(self.data, f)
         f.close
 
-    def predict(seq):
+    def predict(self, seq):
         pass

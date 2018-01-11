@@ -1,0 +1,18 @@
+bleach==1.5.0
+certifi==2017.11.5
+easydict==1.7
+enum34==1.1.6
+html5lib==0.9999999
+Markdown==2.6.11
+numpy==1.14.0
+Pillow==5.0.0
+protobuf==3.5.1
+PyYAML==3.12
+six==1.11.0
+tensorboard==1.0.0a6
+tensorboardX==0.8
+http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp35-cp35m-linux_x86_64.whl ; sys_platform == "linux"
+http://download.pytorch.org/whl/cu80/torch-0.3.0.post4-cp35-cp35m-linux_x86_64.whl ; sys_platform == "linux2"
+http://download.pytorch.org/whl/torch-0.3.0.post4-cp35-cp35m-macosx_10_6_x86_64.whl ; sys_platform == "darwin"
+tqdm==4.19.5
+Werkzeug==0.14.1
