@@ -1,18 +1,24 @@
 {
   "name": "dl-suggest",
-  "main": "./lib/dl-suggest",
-  "version": "0.0.0",
-  "description": "A short description of your package",
+  "main": "./lib/main",
+  "version": "0.1.0",
+  "description": "dl-suggest autocomplete provider for Atom.",
   "keywords": [
+    "autocomplete",
+    "deep learning",
+    "team19"
   ],
-  "activationCommands": {
-    "atom-workspace": "dl-suggest:toggle"
-  },
-  "repository": "https://github.com/atom/dl-suggest",
+  "repository": "https://github.com/norihito-hirose/team19",
+  "author": "Norihito Hirose (http://www.monokakido.jp)",
   "license": "MIT",
   "engines": {
-    "atom": ">=1.0.0 <2.0.0"
+    "atom": ">=1.15.0 <2.0.0"
   },
-  "dependencies": {
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "getProvider"
+      }
+    }
   }
 }
