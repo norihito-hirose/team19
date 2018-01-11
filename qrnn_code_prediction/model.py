@@ -36,7 +36,6 @@ class QRNN(object):
         self.seqs = data.indexed_seqs
 
         self.net = self.load_network()
-
         self.data = data
 
     def load_network(self):
@@ -98,5 +97,5 @@ class QRNN(object):
         pickle.dump(self.data, f)
         f.close
 
-    def predict(seq):
+    def predict(self, seq):
         pass
