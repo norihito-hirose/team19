@@ -99,5 +99,5 @@ class QRNN(object):
         pickle.dump(self.data, f)
         f.close
 
-    def predict(seq):
+    def predict(self, seq):
         pass
