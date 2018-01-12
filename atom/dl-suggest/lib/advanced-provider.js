@@ -14,6 +14,8 @@ class AdvancedProvider {
 
 		// make these suggestions appear above default suggestions
 		this.suggestionPriority = 2;
+
+		this.launchDeamon();
 	}
 
 	getSuggestions(options) {
@@ -58,7 +60,6 @@ class AdvancedProvider {
 	findMatchingSuggestions(prefix, sequence) {
 		// using a Promise lets you fetch and return suggestions asynchronously
 		// this is useful for hitting an external API without causing Atom to freeze
-		console.log(prefix);
 		return new Promise((resolve) => {
 			// fire off an async request to the external API
 			let queryURL = API_URL + '?in=' + encodeURIComponent(sequence);
@@ -99,6 +100,24 @@ class AdvancedProvider {
 					console.log(err);
 				});
 		});
+	}
+
+	launchDeamon() {
+		var child_process = require('child_process');
+		let libDir = __dirname;
+		let daemonDir = __dirname + '/../../../dlsuggestd/'
+		let daemonPath = daemonDir + 'bin/dlsuggestd'
+		let modelPath = '../model/model_lstm.pth';
+		let wordToIndexPath = '../model/word_to_idx.npy';
+		let targetToIndexPath = '../model/target_to_idx.npy';
+		let launchArgs = [
+			'start',
+			'-m' + modelPath,
+			'-w' + wordToIndexPath,
+			'-t' + targetToIndexPath,
+		];
+		let options = {'cwd':daemonDir};
+		child_process.execFile(daemonPath, launchArgs, options);
 	}
 
 	// clones a suggestion object to a new object with some shared additions
