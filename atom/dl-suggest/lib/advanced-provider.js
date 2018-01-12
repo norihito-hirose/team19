@@ -98,6 +98,7 @@ class AdvancedProvider {
 				.catch((err) => {
 					// something went wrong
 					console.log(err);
+					this.launchDeamon();
 				});
 		});
 	}
