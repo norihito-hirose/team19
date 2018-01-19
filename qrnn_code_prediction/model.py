@@ -37,7 +37,6 @@ class QRNN(object):
         self.seqs = data.indexed_seqs
 
         self.net = self.load_network()
-
         self.data = data
 
     def load_network(self):

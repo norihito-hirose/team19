@@ -1,0 +1,10 @@
+tf.layers.batch_normalization
+tf.layers.conv2d
+tf.nn.relu
+tf.layers.batch_normalization
+tf.layers.conv2d
+tf.nn.relu
+tf.layers.max_pooling2d
+tf.layers.batch_normalization
+tf.layers.conv2d
+tf.nn.relu
