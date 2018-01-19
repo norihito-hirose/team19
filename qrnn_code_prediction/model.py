@@ -21,7 +21,7 @@ class QRNN(object):
             self.log_dir = cfg.TRAIN.LOG_DIR
             self.summary_writer = FileWriter(self.log_dir)
 
-        self.cuda = torch.cuda.is_available()
+        self.cuda = cfg.TRAIN.CUDA
 
         if self.cuda:
             self.gpu = int(cfg.GPU_ID)
@@ -44,7 +44,7 @@ class QRNN(object):
         if self.cuda:
             net = net.cuda()
         if not cfg.TRAIN.FLAG:
-            state_dict = torch.load(cfg.NET, map_location=lambda storage, loc: storage)
+            state_dict = torch.load(cfg.TRAINEDNET, map_location=lambda storage, loc: storage)
             print("Load from", cfg.NET)
 
         return net
@@ -53,14 +53,15 @@ class QRNN(object):
         start_idx = 0
 
         net = self.net
-        criterion = nn.NLLLoss()
+        criterion = nn.NLLLoss(ignore_index=0)
         lr = cfg.TRAIN.LEARNING_RATE
         optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0, 0.99))
 
         count = 0
-        start_idx = 0
         iteration = len(self.seqs) // self.batch_size + 1
         for epoch in range(self.epoch):
+            start_idx = 0
+            print(start_idx)
             for i in tqdm(range(iteration)):
                 x, lengths = prepare_batch(self.seqs, start_idx, self.batch_size)
                 if self.cuda:
@@ -79,6 +80,7 @@ class QRNN(object):
                 net.zero_grad()
                 loss.backward()
                 optimizer.step()
+                start_idx = start_idx +  self.batch_size
 
             end = time.time()
 
@@ -100,10 +102,20 @@ class QRNN(object):
 
     def predict_topN(self, seq, N=10, with_probability=False):
         indexed_seq = self.data.index_from_seq(seq)
+        print(indexed_seq)
+        indexed_seq = Variable(torch.LongTensor(indexed_seq))
+        indexed_seq = indexed_seq.view(1, -1)
         logits = self.net(indexed_seq)
-        candIdx = np.argsort(logits)[::-1][:N]
+        print(logits.shape)
+        logits = logits.view(-1, self.vocab_size)
+        print(logits)
+        _, candIdx = logits.max(1)
+        print(candIdx)
+        candIdx = candIdx.data
 
         if with_probability:
-            return [(target_word_list[i], np.exp(logits[i])) for i in candIdx]
+            print("the result is", [(self.index2word[i], np.exp(logits[i])) for i in candIdx])
         else:
-            return [target_word_list[i] for i in candIdx]
+            return [self.index2word[i] for i in candIdx + 1]
+
+

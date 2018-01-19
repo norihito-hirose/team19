@@ -20,13 +20,10 @@ if __name__ == '__main__':
         return elements
 
     sentence = find_tf(args.file)
-    print(sentence)
 
     f = open("output/Data/data.pkl", "rb")
     data = pickle.load(f)
-    sentence = data.index_from_seq(sentence)
-    sentence = Variable(torch.LongTensor(sentence))
 
     model = QRNN(data)
-    result = QRNN.predict_topN(sentence)
-    print(sentence)
+    result = model.predict_topN(sentence)
+    print(result)

@@ -62,7 +62,7 @@ class Net(nn.Module):
         self.lstm = nn.Sequential(
             LSTMLayer(embedding_size, 256),
             LSTMLayer(256, 256),
-            LSTMLayer(256, 256)
+
         )
         self.fc = nn.Linear(256, vocab_size)
         self.logsoft = nn.LogSoftmax(dim=2)
