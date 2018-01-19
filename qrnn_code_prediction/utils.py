@@ -43,12 +43,17 @@ class DataPreprocessor(object):
     def indexes_from_seqs(self):
         indexed_seqs = []
         for seq in self.seqs:
-            indexed_seq = [self.word2index[word] for word in seq if word in self.keep_words]
+            indexed_seq = self.index_from_seq(seq)
             if len(indexed_seq) >= cfg.DATA.MIN_LENGTH:
                 indexed_seqs.append(indexed_seq)
 
         indexed_seqs.sort(key=len)
         self.indexed_seqs = indexed_seqs
+
+    def index_from_seq(self, seq):
+        indexed_seq = [self.word2index[word] for word in seq if word in self.keep_words]
+
+        return indexed_seq
 
     def trim(self, min_frequency=cfg.DATA.MIN_FREQUENCY):
         if self.trimmed:
@@ -77,8 +82,6 @@ class DataPreprocessor(object):
                         self.word2count[word] += 1
 
         self.vocab_size = n_words
-
-
 
 def prepare_batch(seqs, start_idx, batch_size):
     end_idx = start_idx + batch_size
