@@ -54,7 +54,7 @@ class QRNN(object):
         start_idx = 0
 
         net = self.net
-        criterion = nn.CrossEntropyLoss()
+        criterion = nn.NLLLoss()
         lr = cfg.TRAIN.LEARNING_RATE
         optimizer = optim.Adam(net.parameters(), lr=lr, betas=(0, 0.99))
 
@@ -99,5 +99,12 @@ class QRNN(object):
         pickle.dump(self.data, f)
         f.close
 
-    def predict(self, seq):
-        pass
+    def predict_topN(self, seq, N=10, with_probability=False):
+        indexed_seq = self.data.index_from_seq(seq)
+        logits = self.net(indexed_seq)
+        candIdx = np.argsort(logits)[::-1][:N]
+
+        if with_probability:
+            return [(target_word_list[i], np.exp(logits[i])) for i in candIdx]
+        else:
+            return [target_word_list[i] for i in candIdx]
